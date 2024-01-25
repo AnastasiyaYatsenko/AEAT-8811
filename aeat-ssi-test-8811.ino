@@ -42,23 +42,50 @@ void setup() {
   Serial.begin(BAUDRATE);
   pinMode(4,  OUTPUT);
   digitalWrite(4,  LOW);
-  aeat.init();
-//  aeat.print_registers();
-//  aeat.setup_ssi3();
+
+//  aeat.read_reg4();
+//  aeat.read_reg5();
+//  aeat.read_reg6();
+//  aeat.spi_write(6,0);
 }
 
 void loop() {
+//  int r=0;
+  Serial.print("Enter resolution (0..3):");
+  while (Serial.available() == 0) {}     //wait for data available
+  int r = Serial.read()-'0';
+//  if (!isDigit(inChar)) { return; }
+//  r = inString.toInt();
+  if (r>3 or r<0) { return; }
+  Serial.printf("Setting resolution to %d\n",r);
+  
+  aeat.write_res(r);
+  aeat.print_registers();
+  for (int i=0; i<=50; i++){
+//    aeat.print_register(6);
+
+    delay(100);
+
+    unsigned long long int data=0;
+    data = aeat.ssi_read();
+    Serial.printf("SSI HW   0x%04lx=%6lld=%7.3Lf | rdy=%d mhi=%d mlo=%d par=%d err=%d \n",
+                 data, data, double(data)*360.0/65536.0, // результат вже приведено до 18-бітного числа
+                 aeat.rdy,aeat.mhi,aeat.mlo,aeat.par,aeat.error_parity);
+  }
+/*  return;
   unsigned long long int res=0;
   unsigned long long int data=0;
-  data = aeat.read_enc(12);
-  Serial.printf("SSI 0x%04lx=%6lld=%7.3Lf \n",
-                 data, data, double(data)*360.0/65536.0);
+//  data = aeat.read_enc(12);
+//  Serial.printf("SSI 0x%04lx=%6lld=%7.3Lf \n",
+//                 data, data, double(data)*360.0/65536.0);
   
 //  aeat.setup_ssi3();
-//  data = aeat.ssi_read(12);
-//  Serial.printf("SSI HW   0x%04lx=%6lld=%7.3Lf | rdy=%d mhi=%d mlo=%d par=%d err=%d \n",
-//                 data, data, double(data)*360.0/65536.0, // результат вже приведено до 18-бітного числа
-//                 aeat.rdy,aeat.mhi,aeat.mlo,aeat.par,aeat.error_parity);
+  data = aeat.ssi_read(12);
+  Serial.printf("SSI HW   0x%04lx=%6lld=%7.3Lf | rdy=%d mhi=%d mlo=%d par=%d err=%d \n",
+                 data, data, double(data)*360.0/65536.0, // результат вже приведено до 18-бітного числа
+                 aeat.rdy,aeat.mhi,aeat.mlo,aeat.par,aeat.error_parity);
+
+  aeat.print_registers();
 //                 
 //  aeat.init_pin_ssi();
 //  data = aeat.ssi_read_pins(12);
@@ -66,4 +93,5 @@ void loop() {
 //                 data, data, double(data)*360.0/65536.0, // результат вже приведено до 16-бітного числа
 //                 aeat.rdy,aeat.mhi,aeat.mlo,aeat.par,aeat.error_parity);
   delay(100);
+  */
 }

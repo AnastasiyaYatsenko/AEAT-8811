@@ -113,15 +113,15 @@ class AEAT8811 {
 public:
 //	AEAT8811();
   AEAT8811();
-  unsigned long int read_enc(unsigned int bits);
-  void init(){init_pin_ssi();};
+//  unsigned long int read_enc(unsigned int bits);
+//  void init(){init_pin_ssi();};
 
   unsigned int get_rdy() {return rdy;};
   unsigned int get_par() {return par;};
   unsigned int get_mhi() {return mhi;};
   unsigned int get_mlo() {return mlo;};
 
-private:
+//private:
   uint8_t M0   = _M0;
   uint8_t M1   = _M1;
   uint8_t M2   = _M2;
@@ -134,8 +134,8 @@ private:
   uint8_t NSL  = _NSL;
   uint8_t DO   = _DO;
 	
-	#define READ  0x40 // read flag in command
-	#define WRITE 0x00 // write flag in command
+	#define READ  0x80 // read flag in command
+	#define WRITE 0x40 // write flag in command
 
 	unsigned int header;
 	uint8_t mode = _AEAT_NONE;
@@ -159,22 +159,116 @@ M1         |  DIN  |  NSL  |   0   |  MOSI |  U  | n/a
 M2         |  SCLK |  SCLK |  SCLK |  SCLK |  V  | n/a 
 M3         |  DO   |  DO   |  DO   |  MISO |  W  | PWM 
 */
-  void setup_spi4(){ return setup_spi4(M0, M1, M2, M3, MSEL); } // CS, MOSI, SCLK, MISO, MSEL
+//  void setup_spi3(){ return setup_spi3(M0, M1, M2, M3, MSEL); } // CS, MOSI, SCLK, MISO, MSEL
   void setup_ssi3(){ return setup_ssi3(M0, M1, M2, M3, MSEL); } // ->1, NSL, SCLK, DO,   MSEL
-  void setup_spi4(uint8_t CS_T, uint8_t MOSI_T, uint8_t SCLK_T, uint8_t MISO_T, uint8_t MSEL_T);
+  void setup_spi3(){ return setup_spi3(M0, M1, M2, M3, MSEL); } // ->1, NSL, SCLK, DO,   MSEL
+  void setup_spi3(uint8_t M0_T, uint8_t MOSI_T, uint8_t SCLK_T, uint8_t MISO_T, uint8_t MSEL_T);
   void setup_ssi3(uint8_t M0_T, uint8_t NSL_T,  uint8_t SCLK_T, uint8_t DO_T,   uint8_t MSEL_T);
 	unsigned int parity(unsigned int n);
-	unsigned long int spi_transfer16(unsigned int reg, unsigned int RW);
-	unsigned long int spi_transfer24(unsigned int reg, unsigned int RW);
-	unsigned long int spi_read16(unsigned int reg);
-	unsigned long int spi_read24(unsigned int reg);
-  unsigned long int spi_write16(unsigned int reg, unsigned int data);
-  unsigned long int ssi_read(unsigned int bits);
-  unsigned long int ssi_read(){ return ssi_read(18); };
+//	unsigned long int spi_transfer16(unsigned int reg, unsigned int RW);
+	unsigned long int spi_transfer(unsigned int reg, unsigned int RW);
+	unsigned long int spi_read(unsigned int reg);
+//	unsigned long int spi_read24(unsigned int reg);
+  unsigned long int spi_write(unsigned int reg, unsigned int data);
+  unsigned long int spi_write_(unsigned int reg, unsigned int data);
+  unsigned long int ssi_read();
+//  unsigned long int ssi_read(){ return ssi_read(18); };
+	void print_register(unsigned int reg);
 	void print_registers();
 
   void init_pin_ssi(){ return init_pin_ssi(M0, M1, M2, M3, MSEL); }
   void init_pin_ssi(uint8_t M0_T, uint8_t NSL_T,  uint8_t SCLK_T, uint8_t DO_T,   uint8_t MSEL_T);
-  unsigned long int ssi_read_pins(unsigned int bits);
+  unsigned long int ssi_read_pins();
+
+  union Reg4Config {
+    struct {
+      uint8_t uvw_pwm:3;
+      uint8_t iwidth :2;
+      uint8_t blank  :2;
+      uint8_t uvw_sel:1;
+    };
+    uint8_t bits;
+  };
+
+  Reg4Config reg4;
+
+  union Reg5Config {
+    struct {
+      uint8_t hyst  :3;
+      uint8_t cpr1  :4;
+      uint8_t blank :1;
+    };
+    uint8_t bits;
+  };
+
+  Reg5Config reg5;
+
+  union Reg6Config {
+    struct {
+      uint8_t cpr2     :3;
+      uint8_t ssi_sel  :1;
+      uint8_t res      :2;
+      uint8_t zero_lat_mode :1;
+      uint8_t dir      :1;
+    };
+    uint8_t bits;
+  };
+
+  Reg6Config reg6;
+  unsigned int read_bits;
+
+  //запис полів регістру 4
+  void write_uvw_sel(uint8_t data);
+  void write_iwidth(uint8_t data);
+  void write_uvw_pwm(uint8_t data);
+  
+  //запис полів регістру 5
+  void write_cpr1(uint8_t data);
+  void write_hyst(uint8_t data);
+  
+  //запис полів регістру 6
+  void write_dir(uint8_t data);
+  void write_zero_lat_mode(uint8_t data);
+  void write_res(uint8_t data);
+  void write_ssi_sel(uint8_t data);
+  void write_cpr2(uint8_t data);
+
+  //читання полів
+  //регістру 4
+  uint8_t read_uvw_sel();
+  uint8_t read_iwidth();
+  uint8_t read_uvw_pwm();
+  
+  //регістру 5
+  uint8_t read_cpr1();
+  uint8_t read_hyst();
+  
+  //регістру 6
+  uint8_t read_dir();
+  uint8_t read_zero_lat_mode();
+  uint8_t read_res();
+  uint8_t read_ssi_sel();
+  uint8_t read_cpr2();
+
+  //читання з ЮНІОНУ полів
+  //регістру 4
+  uint8_t get_uvw_sel();
+  uint8_t get_iwidth();
+  uint8_t get_uvw_pwm();
+  
+  //регістру 5
+  uint8_t get_cpr1();
+  uint8_t get_hyst();
+  
+  //регістру 6
+  uint8_t get_dir();
+  uint8_t get_zero_lat_mode();
+  uint8_t get_res();
+  uint8_t get_ssi_sel();
+  uint8_t get_cpr2();
+
+  void read_reg4();
+  void read_reg5();
+  void read_reg6();
 };
 #endif
