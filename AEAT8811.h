@@ -116,106 +116,23 @@ public:
 //  unsigned long int read_enc(unsigned int bits);
 //  void init(){init_pin_ssi();};
 
+  void setup_ssi3(){ return setup_ssi3(M0, M1, M2, M3, MSEL); } // ->1, NSL, SCLK, DO,   MSEL
+  void setup_spi3(){ return setup_spi3(M0, M1, M2, M3, MSEL); } // ->1, NSL, SCLK, DO,   MSEL
+  void init_pin_ssi(){ return init_pin_ssi(M0, M1, M2, M3, MSEL); }
+  void setup_spi3(uint8_t M0_T, uint8_t MOSI_T, uint8_t SCLK_T, uint8_t MISO_T, uint8_t MSEL_T);
+  void setup_ssi3(uint8_t M0_T, uint8_t NSL_T,  uint8_t SCLK_T, uint8_t DO_T,   uint8_t MSEL_T);
+  void init_pin_ssi(uint8_t M0_T, uint8_t NSL_T,  uint8_t SCLK_T, uint8_t DO_T,   uint8_t MSEL_T);
+  
+  unsigned long int ssi_read();
+  unsigned long int ssi_read_pins();
+  
+  void print_register(unsigned int reg);
+  void print_registers();
+
   unsigned int get_rdy() {return rdy;};
   unsigned int get_par() {return par;};
   unsigned int get_mhi() {return mhi;};
   unsigned int get_mlo() {return mlo;};
-
-//private:
-  uint8_t M0   = _M0;
-  uint8_t M1   = _M1;
-  uint8_t M2   = _M2;
-  uint8_t M3   = _M3;
-  uint8_t CS   = _CS;
-  uint8_t MOSI = _MOSI;
-  uint8_t MISO = _MISO;
-  uint8_t SCLK = _SCLK;
-  uint8_t MSEL = _MSEL;
-  uint8_t NSL  = _NSL;
-  uint8_t DO   = _DO;
-	
-	#define READ  0x80 // read flag in command
-	#define WRITE 0x40 // write flag in command
-
-	unsigned int header;
-	uint8_t mode = _AEAT_NONE;
-	unsigned int error_flag=0;
-	unsigned int error_parity=0; // читання з пристрою пройшло з битою парністю
-	unsigned int error_reg=0; 
-	unsigned long int pos=0; 
-	unsigned long int raw_data=0; 
-
-  unsigned int rdy=0; // ready flag for ssi-3
-  unsigned int par=0; // parity for ssi-3
-  unsigned int mhi=0; // error "Magnet is too High" for ssi-3
-  unsigned int mlo=0; // error "Magnet is too Low"  for ssi-3
-
-
-
-/*         | SPI-3 | SSI-3 | SSI-2 | SPI-4 | UVW | PWM 
-MSEL       |   0   |   0   |   0   |   1   |  1  |  1 
-M0         |   0   |   1   |   1   |  NCS  | ERR | ERR 
-M1         |  DIN  |  NSL  |   0   |  MOSI |  U  | n/a 
-M2         |  SCLK |  SCLK |  SCLK |  SCLK |  V  | n/a 
-M3         |  DO   |  DO   |  DO   |  MISO |  W  | PWM 
-*/
-//  void setup_spi3(){ return setup_spi3(M0, M1, M2, M3, MSEL); } // CS, MOSI, SCLK, MISO, MSEL
-  void setup_ssi3(){ return setup_ssi3(M0, M1, M2, M3, MSEL); } // ->1, NSL, SCLK, DO,   MSEL
-  void setup_spi3(){ return setup_spi3(M0, M1, M2, M3, MSEL); } // ->1, NSL, SCLK, DO,   MSEL
-  void setup_spi3(uint8_t M0_T, uint8_t MOSI_T, uint8_t SCLK_T, uint8_t MISO_T, uint8_t MSEL_T);
-  void setup_ssi3(uint8_t M0_T, uint8_t NSL_T,  uint8_t SCLK_T, uint8_t DO_T,   uint8_t MSEL_T);
-	unsigned int parity(unsigned int n);
-//	unsigned long int spi_transfer16(unsigned int reg, unsigned int RW);
-	unsigned long int spi_transfer(unsigned int reg, unsigned int RW);
-	unsigned long int spi_read(unsigned int reg);
-//	unsigned long int spi_read24(unsigned int reg);
-  unsigned long int spi_write(unsigned int reg, unsigned int data);
-  unsigned long int spi_write_(unsigned int reg, unsigned int data);
-  unsigned long int ssi_read();
-//  unsigned long int ssi_read(){ return ssi_read(18); };
-	void print_register(unsigned int reg);
-	void print_registers();
-
-  void init_pin_ssi(){ return init_pin_ssi(M0, M1, M2, M3, MSEL); }
-  void init_pin_ssi(uint8_t M0_T, uint8_t NSL_T,  uint8_t SCLK_T, uint8_t DO_T,   uint8_t MSEL_T);
-  unsigned long int ssi_read_pins();
-
-  union Reg4Config {
-    struct {
-      uint8_t uvw_pwm:3;
-      uint8_t iwidth :2;
-      uint8_t blank  :2;
-      uint8_t uvw_sel:1;
-    };
-    uint8_t bits;
-  };
-
-  Reg4Config reg4;
-
-  union Reg5Config {
-    struct {
-      uint8_t hyst  :3;
-      uint8_t cpr1  :4;
-      uint8_t blank :1;
-    };
-    uint8_t bits;
-  };
-
-  Reg5Config reg5;
-
-  union Reg6Config {
-    struct {
-      uint8_t cpr2     :3;
-      uint8_t ssi_sel  :1;
-      uint8_t res      :2;
-      uint8_t zero_lat_mode :1;
-      uint8_t dir      :1;
-    };
-    uint8_t bits;
-  };
-
-  Reg6Config reg6;
-  unsigned int read_bits;
 
   //запис полів регістру 4
   void write_uvw_sel(uint8_t data);
@@ -270,5 +187,87 @@ M3         |  DO   |  DO   |  DO   |  MISO |  W  | PWM
   void read_reg4();
   void read_reg5();
   void read_reg6();
+
+private:
+  uint8_t M0   = _M0;
+  uint8_t M1   = _M1;
+  uint8_t M2   = _M2;
+  uint8_t M3   = _M3;
+  uint8_t CS   = _CS;
+  uint8_t MOSI = _MOSI;
+  uint8_t MISO = _MISO;
+  uint8_t SCLK = _SCLK;
+  uint8_t MSEL = _MSEL;
+  uint8_t NSL  = _NSL;
+  uint8_t DO   = _DO;
+	
+	#define READ  0x80 // read flag in command
+	#define WRITE 0x40 // write flag in command
+
+	unsigned int header;
+	uint8_t mode = _AEAT_NONE;
+	unsigned int error_flag=0;
+	unsigned int error_parity=0; // читання з пристрою пройшло з битою парністю
+	unsigned int error_reg=0; 
+	unsigned long int pos=0; 
+	unsigned long int raw_data=0; 
+
+  unsigned int rdy=0; // ready flag for ssi-3
+  unsigned int par=0; // parity for ssi-3
+  unsigned int mhi=0; // error "Magnet is too High" for ssi-3
+  unsigned int mlo=0; // error "Magnet is too Low"  for ssi-3
+
+
+
+/*         | SPI-3 | SSI-3 | SSI-2 | SPI-4 | UVW | PWM 
+MSEL       |   0   |   0   |   0   |   1   |  1  |  1 
+M0         |   0   |   1   |   1   |  NCS  | ERR | ERR 
+M1         |  DIN  |  NSL  |   0   |  MOSI |  U  | n/a 
+M2         |  SCLK |  SCLK |  SCLK |  SCLK |  V  | n/a 
+M3         |  DO   |  DO   |  DO   |  MISO |  W  | PWM 
+*/
+
+	unsigned int parity(unsigned int n);
+	unsigned long int spi_transfer(unsigned int reg, unsigned int RW);
+	unsigned long int spi_read(unsigned int reg);
+  unsigned long int spi_write(unsigned int reg, unsigned int data);
+  unsigned long int spi_write_(unsigned int reg, unsigned int data);
+
+  union Reg4Config {
+    struct {
+      uint8_t uvw_pwm:3;
+      uint8_t iwidth :2;
+      uint8_t blank  :2;
+      uint8_t uvw_sel:1;
+    };
+    uint8_t bits;
+  };
+
+  Reg4Config reg4;
+
+  union Reg5Config {
+    struct {
+      uint8_t hyst  :3;
+      uint8_t cpr1  :4;
+      uint8_t blank :1;
+    };
+    uint8_t bits;
+  };
+
+  Reg5Config reg5;
+
+  union Reg6Config {
+    struct {
+      uint8_t cpr2     :3;
+      uint8_t ssi_sel  :1;
+      uint8_t res      :2;
+      uint8_t zero_lat_mode :1;
+      uint8_t dir      :1;
+    };
+    uint8_t bits;
+  };
+
+  Reg6Config reg6;
+  unsigned int read_bits;
 };
 #endif
