@@ -122,6 +122,8 @@ public:
   void setup_spi3(uint8_t M0_T, uint8_t MOSI_T, uint8_t SCLK_T, uint8_t MISO_T, uint8_t MSEL_T);
   void setup_ssi3(uint8_t M0_T, uint8_t NSL_T,  uint8_t SCLK_T, uint8_t DO_T,   uint8_t MSEL_T);
   void init_pin_ssi(uint8_t M0_T, uint8_t NSL_T,  uint8_t SCLK_T, uint8_t DO_T,   uint8_t MSEL_T);
+
+  void set_zero(unsigned int data);
   
   unsigned long int ssi_read();
   unsigned long int ssi_read_pins();

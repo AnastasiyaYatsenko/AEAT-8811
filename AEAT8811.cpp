@@ -118,7 +118,7 @@ unsigned long int AEAT8811::ssi_read() {
     delayMicroseconds(1);
 //    digitalWrite(4,  HIGH); 
 //  виявилось, що esp32 може робити транзакції (кількість sclk) з довільним числом бітів <=32
-    SPI.transferBits(0x0, &buffer, read_bits+4); // 18 бітів позиції+4 службових
+    SPI.transferBits(0x0, &buffer, read_bits+4); // 16 бітів позиції+4 службових
 //    unsigned int high = SPI.transfer(0xff);
 //    unsigned int mid  = SPI.transfer(0xff);
 //    unsigned int low  = SPI.transfer(0xff);
@@ -145,7 +145,7 @@ unsigned long int AEAT8811::ssi_read() {
     mhi = (raw_data&4)>>2;
     rdy = (raw_data&8)>>3;
     res = raw_data>>4;
-// для зручності подальших розрахунків приводимо результат до 18-бітового числа, незалежно від реальної точності датчика
+// для зручності подальших розрахунків приводимо результат до 16-бітового числа, незалежно від реальної точності датчика
       if (read_bits<16) 
       res = res<<(16-read_bits);
     return res;
@@ -193,6 +193,15 @@ unsigned long int AEAT8811::spi_write(unsigned int reg, unsigned int data) {
   if (check == data) error_flag = 0;
   else error_flag = 1;
   return !error_flag; // це для виклику функції: if (!spi_write(reg,data)) Serial.println("ALARM!!!");
+}
+
+void AEAT8811::set_zero(unsigned int data) {
+  Serial.printf("Current position is %06x | Reg[3]=%02x | Reg[2]=%02x\n",data, spi_read(3), spi_read(2));
+//  Serial.printf("Regs are %06x | unmasked sum =%06x | masked =%06x\n", regs, data_unmasked, data_masked);
+  data = (data + (spi_read(3)<<8) | spi_read(2)) & 0xffff;
+  Serial.printf("Setting current position %06x as ZERO\n",data);
+  spi_write(2, data&0xff);
+  spi_write(3, (data>>8)&0xff);
 }
 
 void AEAT8811::print_register(unsigned int reg) {
@@ -247,7 +256,7 @@ void AEAT8811::print_registers() {
   Serial.printf("0:   0x%02x Customer Reserve 0\n", data);
   data = spi_read(1);
   Serial.printf("1:   0x%02x Customer Reserve 1\n", data);
-  data = (spi_read(4)<<8) | spi_read(3) ;
+  data = (spi_read(3)<<8) | spi_read(2);
   Serial.printf("2-3: 0x%04x Zero Reset\n", data);
   data = spi_read(4);
 
