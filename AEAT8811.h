@@ -107,14 +107,13 @@ M3         |  DO   |  DO   |  DO   |  MISO |  W  | PWM
 #define _AEAT_SPI3 2
 #define _AEAT_SSI3 3
 #define _AEAT_SSI2 4
+#define _AEAT_SSI3P 5
 
 
 class AEAT8811 {
 public:
 //	AEAT8811();
   AEAT8811();
-//  unsigned long int read_enc(unsigned int bits);
-//  void init(){init_pin_ssi();};
 
   void setup_ssi3(){ return setup_ssi3(M0, M1, M2, M3, MSEL); } // ->1, NSL, SCLK, DO,   MSEL
   void setup_spi3(){ return setup_spi3(M0, M1, M2, M3, MSEL); } // ->1, NSL, SCLK, DO,   MSEL

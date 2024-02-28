@@ -310,11 +310,16 @@ void AEAT8811::init_pin_ssi(uint8_t M0_T, uint8_t NSL_T, uint8_t SCLK_T, uint8_t
   digitalWrite(NSL, HIGH);
   digitalWrite(SCLK, HIGH);
   delayMicroseconds(1);
-//  digitalWrite(PWRDOWN, LOW);
+
+  mode = _AEAT_SSI3P;
 }
 
 unsigned long int AEAT8811::ssi_read_pins() {
 // у цьому режимі службові прапорці йдуть ЗА числом, тому для отримання коректних прапорців треба задавати реальну бітову точність 
+    if (mode != _AEAT_SSI3P) {
+      init_pin_ssi();
+    }
+    
     unsigned long long int res=0;
     uint32_t buffer=0;
     digitalWrite(NSL, LOW);
@@ -400,6 +405,12 @@ void AEAT8811::write_zero_lat_mode(uint8_t data) {
   spi_write(6, reg6.bits);
 }
 
+/*
+ * 11 = 3: 14-b absolute resolution (SSI)
+ * 10 = 2: 16-b absolute resolution (SSI)
+ * 01 = 1: 10-b absolute resolution (SSI)
+ * 00 = 0: 12-b absolute resolution (SSI)
+ */
 void AEAT8811::write_res(uint8_t data) {
   reg6.bits = spi_read(6);
   reg6.res = data;

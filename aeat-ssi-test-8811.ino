@@ -38,51 +38,41 @@ void print_byte(uint8_t byte)
 
 
 void setup() {
-//  Serial.printf("SCLK=%d\n",SCLK);
   Serial.begin(BAUDRATE);
-//  pinMode(4,  OUTPUT);
-//  digitalWrite(4,  LOW);
-
-//  aeat.read_reg4();
-//  aeat.read_reg5();
-//  aeat.read_reg6();
-//  aeat.spi_write(6,0);
-  aeat.spi_write(2, 0);
-  aeat.spi_write(3, 0);
-  aeat.write_res(2); //16-bits
+  unsigned long int data=0;
+  unsigned long int data1=0;
+  for (int i=0; i<4; i++){
+    aeat.write_res(i);
+    data = aeat.ssi_read();
+    data1 = aeat.ssi_read_pins();
+    Serial.printf("SSI HW =0x%05lx SSI PINS =0x%05lx (resolution is %d)\n", data, data1, i);    
+  }
   aeat.print_registers();
-//  unsigned int data;
-//  for (int i=0; i<=10; i++){
-//    delay(100);
-//    data = aeat.ssi_read();
-//    Serial.printf("SSI HW   0x%04lx=%6lld=%7.3Lf | rdy=%d mhi=%d mlo=%d par=%d err=%d \n",
-//                 data, data, double(data)*360.0/65536.0, // результат вже приведено до 18-бітного числа
-//                 aeat.rdy,aeat.mhi,aeat.mlo,aeat.par,aeat.error_parity);
-//  }
-//  
-//  while (Serial.available() == 0) {}     //wait for data available
-//
-//  Serial.printf("DATA   0x%02x 0x%02x  \n",
-//                 data&0xff, (data>>8)&0xff);
-//  
-//  aeat.spi_write(2, data&0xff);
-//  aeat.spi_write(3, (data>>8)&0xff);
-//  aeat.print_register(3);
-////  unsigned long long int data;
-//  for (int i=0; i<=10; i++){
-//    delay(100);
-//    data = aeat.ssi_read();
-//    Serial.printf("SSI HW   0x%04lx=%6lld=%7.3Lf | rdy=%d mhi=%d mlo=%d par=%d err=%d \n",
-//                 data, data, double(data)*360.0/65536.0, // результат вже приведено до 18-бітного числа
-//                 aeat.rdy,aeat.mhi,aeat.mlo,aeat.par,aeat.error_parity);
-//  }
-  Serial.printf("sizeof(unsigned int)=%d\n",sizeof(unsigned int));
+  aeat.write_res(0);
 }
 
 void loop() {
 
+  unsigned long long int res=0;
+  unsigned long long int data=0;
   
-  aeat.print_register(3);
+  aeat.setup_ssi3();
+  data = aeat.ssi_read();
+  Serial.printf("SSI HW   0x%04lx=%6lld=%7.3Lf \n",
+                 data, data, double(data)*360.0/65536.0); // результат вже приведено до 16-бітного числа
+
+//  aeat.print_registers();
+
+  aeat.init_pin_ssi();
+  data = aeat.ssi_read_pins();
+  Serial.printf("SSI PINS 0x%04lx=%6lld=%7.3Lf \n",
+                 data, data, double(data)*360.0/65536.0); // результат вже приведено до 16-бітного числа
+  Serial.print("------------\n");
+  
+  delay(1000);
+  
+  //Example for testing set_zero
+  /*aeat.print_register(3);
   unsigned int data;
   for (int i=0; i<=10; i++){
     delay(300);
@@ -108,64 +98,6 @@ void loop() {
   }
   else {
     aeat.set_zero(data);
-  }
+  }*/
 
-
-  
-//  Serial.printf("DATA   0x%02x 0x%02x  \n", data&0xff, (data>>8)&0xff);
-  
-//  aeat.spi_write(2, data&0xff);
-//  aeat.spi_write(3, (data>>8)&0xff);
-//  aeat.print_register(3);
-////  unsigned long long int data;
-//  for (int i=0; i<=10; i++){
-//    delay(100);
-//    data = aeat.ssi_read();
-//    Serial.printf("SSI HW   0x%04lx=%6lld=%7.3Lf | rdy=%d mhi=%d mlo=%d par=%d err=%d \n",
-//                 data, data, double(data)*360.0/65536.0, // результат вже приведено до 16-бітного числа
-//                 aeat.rdy,aeat.mhi,aeat.mlo,aeat.par,aeat.error_parity);
-//  }
-/*  Serial.print("Enter resolution (0..3):");
-  while (Serial.available() == 0) {}     //wait for data available
-  int r = Serial.read()-'0';
-  if (r>3 or r<0) { return; }
-  Serial.printf("Setting resolution to %d\n",r);
-  
-  aeat.write_res(r);
-  aeat.print_registers();
-  for (int i=0; i<=50; i++){
-//    aeat.print_register(6);
-
-    delay(100);
-
-    unsigned long long int data=0;
-    data = aeat.ssi_read();
-    Serial.printf("SSI HW   0x%04lx=%6lld=%7.3Lf | rdy=%d mhi=%d mlo=%d par=%d err=%d \n",
-                 data, data, double(data)*360.0/65536.0, // результат вже приведено до 18-бітного числа
-                 aeat.rdy,aeat.mhi,aeat.mlo,aeat.par,aeat.error_parity);
-  }
-*/
-  
-/*  return;
-  unsigned long long int res=0;
-  unsigned long long int data=0;
-//  data = aeat.read_enc(12);
-//  Serial.printf("SSI 0x%04lx=%6lld=%7.3Lf \n",
-//                 data, data, double(data)*360.0/65536.0);
-  
-//  aeat.setup_ssi3();
-  data = aeat.ssi_read(12);
-  Serial.printf("SSI HW   0x%04lx=%6lld=%7.3Lf | rdy=%d mhi=%d mlo=%d par=%d err=%d \n",
-                 data, data, double(data)*360.0/65536.0, // результат вже приведено до 18-бітного числа
-                 aeat.rdy,aeat.mhi,aeat.mlo,aeat.par,aeat.error_parity);
-
-  aeat.print_registers();
-//                 
-//  aeat.init_pin_ssi();
-//  data = aeat.ssi_read_pins(12);
-//  Serial.printf("SSI PINS 0x%04lx=%6lld=%7.3Lf | rdy=%d mhi=%d mlo=%d par=%d err=%d \n",
-//                 data, data, double(data)*360.0/65536.0, // результат вже приведено до 16-бітного числа
-//                 aeat.rdy,aeat.mhi,aeat.mlo,aeat.par,aeat.error_parity);
-  delay(100);
-  */
 }
